@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HollowNet Intro</title>
+    <title>HollowNet Intro & Interface</title>
     <style>
         /* Base page styling */
         body, html {
@@ -11,11 +11,12 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #111; /* Example background for the actual website */
+            background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            overflow: hidden; /* Prevent scrollbars during animations */
         }
 
-        /* Full-screen intro overlay */
+        /* --- INTRO OVERLAY --- */
         #intro-overlay {
             position: fixed;
             top: 0;
@@ -27,40 +28,79 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            cursor: pointer; /* Hints to the user that they can click */
+            cursor: pointer;
             transition: opacity 1s ease;
+            overflow: hidden;
+        }
+
+        /* Subtle pulsing blue gradient */
+        #intro-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150vw;
+            height: 150vw;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(14, 42, 94, 0.4) 0%, rgba(5, 5, 5, 0) 60%);
+            animation: pulseBg 4s infinite alternate ease-in-out;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        @keyframes pulseBg {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.3; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
+        }
+
+        /* Blue Embers */
+        .ember {
+            position: absolute;
+            bottom: -20px;
+            width: 3px;
+            height: 3px;
+            background-color: #4facfe;
+            border-radius: 50%;
+            box-shadow: 0 0 8px 3px rgba(79, 172, 254, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            animation: floatUp ease-in forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) translateX(30px); opacity: 0; }
         }
 
         /* Container for the text and underline */
         #intro-content {
             position: relative;
             display: inline-block;
+            z-index: 2;
         }
 
-        /* Thin, modern text styling */
         #intro-text {
             color: #ffffff;
-            font-weight: 100; /* Thin font weight */
+            font-weight: 100;
             font-size: 3.5rem;
             letter-spacing: 6px;
             margin: 0;
             padding-bottom: 12px;
         }
 
-        /* Individual letter styling before animation */
         .letter {
             opacity: 0;
-            filter: blur(4px); /* Adds a cool cinematic fade effect */
+            filter: blur(4px);
             transition: opacity 0.6s ease, filter 0.6s ease;
         }
 
-        /* Class added by JS to trigger letter animations */
         .start-text .letter {
             opacity: 1;
             filter: blur(0px);
         }
 
-        /* Underline styling before animation */
         #intro-underline {
             position: absolute;
             bottom: 0;
@@ -68,82 +108,253 @@
             height: 1px;
             width: 0;
             background-color: #ffffff;
-            transition: width 0.8s cubic-bezier(0.8, 0, 0.2, 1); /* Smooth acceleration/deceleration */
+            transition: width 0.8s cubic-bezier(0.8, 0, 0.2, 1);
         }
 
-        /* Class added by JS to trigger the underline */
         .start-underline #intro-underline {
             width: 100%;
         }
 
-        /* Class added by JS to fade out the entire overlay */
         .fade-out {
             opacity: 0 !important;
-            pointer-events: none; /* Allows clicking through to the main website */
+            pointer-events: none;
+        }
+
+        /* --- BROWSER UI (Post-Intro) --- */
+        #main-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .browser-window {
+            width: 90%;
+            max-width: 1000px;
+            height: 70vh;
+            background: rgba(20, 24, 36, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease 0.5s, transform 1s ease 0.5s;
+        }
+
+        /* Show the browser smoothly when intro finishes */
+        body.intro-finished .browser-window {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .browser-header {
+            height: 50px;
+            background: rgba(30, 34, 45, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            position: relative;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            width: 60px; /* fixed width to balance title */
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot.red { background-color: #ff5f56; }
+        .dot.yellow { background-color: #ffbd2e; }
+        .dot.green { background-color: #27c93f; }
+
+        .browser-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #8b92a5;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+
+        .browser-address-bar {
+            background: #0f111a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            color: #a0aabf;
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            margin-left: 20px;
+            flex-grow: 1;
+            max-width: 400px;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+        }
+
+        .browser-body {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5) 0%, transparent 70%);
+        }
+
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .search-logo {
+            color: #fff;
+            font-size: 2.5rem;
+            font-weight: 100;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .search-bar {
+            width: 50%;
+            max-width: 500px;
+            padding: 15px 25px;
+            background: rgba(15, 17, 26, 0.7);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar:focus {
+            border-color: rgba(79, 172, 254, 0.8);
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.2);
+            background: rgba(15, 17, 26, 0.9);
         }
     </style>
 </head>
 <body>
 
     <div id="intro-overlay">
+        <div id="intro-pulse"></div>
         <div id="intro-content">
             <h1 id="intro-text">HollowNet</h1>
             <div id="intro-underline"></div>
         </div>
     </div>
 
-    <div style="padding: 2rem; color: white;">
-        <h1>Welcome to HollowNet</h1>
-        <p>The intro has finished or was skipped.</p>
+    <div id="main-content">
+        <div class="browser-window">
+            <div class="browser-header">
+                <div class="window-controls">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <div class="browser-address-bar">
+                    https://hollownet.local
+                </div>
+            </div>
+            <div class="browser-body">
+                <div class="search-container">
+                    <div class="search-logo">HollowNet</div>
+                    <input type="text" class="search-bar" placeholder="Search the network..." autocomplete="off">
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         const overlay = document.getElementById('intro-overlay');
         const content = document.getElementById('intro-content');
         const textElement = document.getElementById('intro-text');
+        const pulse = document.getElementById('intro-pulse');
         const originalText = textElement.textContent;
         
-        // 1. Clear the text and wrap each letter in a span for individual animation
+        let activeTimeouts = [];
+        let emberInterval;
+        let isIntroFinished = false;
+
+        // 1. Text Setup
         textElement.textContent = '';
         originalText.split('').forEach((char, index) => {
             const span = document.createElement('span');
             span.textContent = char;
             span.className = 'letter';
-            // Stagger the animation delay for the left-to-right effect
             span.style.transitionDelay = `${index * 0.1}s`;
             textElement.appendChild(span);
         });
 
-        let activeTimeouts = [];
+        // 2. Ember Particle Generator
+        function createEmber() {
+            if (isIntroFinished) return;
+            const ember = document.createElement('div');
+            ember.classList.add('ember');
+            
+            // Randomize position, size, and animation duration
+            ember.style.left = Math.random() * 100 + 'vw';
+            const size = Math.random() * 3 + 1; // 1px to 4px
+            ember.style.width = size + 'px';
+            ember.style.height = size + 'px';
+            ember.style.animationDuration = Math.random() * 3 + 3 + 's'; // 3s to 6s
+            
+            overlay.appendChild(ember);
+            
+            // Clean up DOM after animation finishes
+            setTimeout(() => {
+                if(ember.parentNode) ember.remove();
+            }, 6000);
+        }
 
-        // 2. Start the sequence
-        // Small initial delay to ensure smooth rendering before animation starts
+        // 3. Start Sequence
         activeTimeouts.push(setTimeout(() => {
             content.classList.add('start-text');
+            pulse.style.opacity = '1'; // Fade in the blue background pulse
+            emberInterval = setInterval(createEmber, 150); // Start embers
         }, 300));
 
-        // 3. Trigger the underline after the text animation finishes
-        // Formula: (Number of letters * delay per letter) + CSS transition duration + buffer
+        // 4. Trigger Underline
         const textAnimDuration = (originalText.length * 100) + 600 + 200; 
         activeTimeouts.push(setTimeout(() => {
             content.classList.add('start-underline');
         }, textAnimDuration));
 
-        // 4. Fade out the entire overlay after the underline finishes
-        // Wait for underline duration (800ms) + a 1.2s pause so the user can read it
+        // 5. Fade out and Reveal Interface
         const fadeOutTime = textAnimDuration + 800 + 1200; 
-        activeTimeouts.push(setTimeout(() => {
+        
+        function endIntro() {
+            isIntroFinished = true;
+            clearInterval(emberInterval);
             overlay.classList.add('fade-out');
-        }, fadeOutTime));
+            document.body.classList.add('intro-finished'); // Triggers browser UI entrance
+        }
 
-        // 5. Skip functionality
+        activeTimeouts.push(setTimeout(endIntro, fadeOutTime));
+
+        // 6. Skip functionality
         overlay.addEventListener('click', () => {
-            // Clear all pending scheduled animations
+            if (isIntroFinished) return;
             activeTimeouts.forEach(clearTimeout);
-            
-            // Speed up the fade-out transition for a snappier skip
             overlay.style.transition = 'opacity 0.3s ease';
-            overlay.classList.add('fade-out');
+            endIntro();
         });
     </script>
 
