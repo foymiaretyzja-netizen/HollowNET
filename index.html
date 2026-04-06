@@ -1,1 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HollowNet Intro</title>
+    <style>
+        /* Base page styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #111; /* Example background for the actual website */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
 
+        /* Full-screen intro overlay */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050505;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            cursor: pointer; /* Hints to the user that they can click */
+            transition: opacity 1s ease;
+        }
+
+        /* Container for the text and underline */
+        #intro-content {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Thin, modern text styling */
+        #intro-text {
+            color: #ffffff;
+            font-weight: 100; /* Thin font weight */
+            font-size: 3.5rem;
+            letter-spacing: 6px;
+            margin: 0;
+            padding-bottom: 12px;
+        }
+
+        /* Individual letter styling before animation */
+        .letter {
+            opacity: 0;
+            filter: blur(4px); /* Adds a cool cinematic fade effect */
+            transition: opacity 0.6s ease, filter 0.6s ease;
+        }
+
+        /* Class added by JS to trigger letter animations */
+        .start-text .letter {
+            opacity: 1;
+            filter: blur(0px);
+        }
+
+        /* Underline styling before animation */
+        #intro-underline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 1px;
+            width: 0;
+            background-color: #ffffff;
+            transition: width 0.8s cubic-bezier(0.8, 0, 0.2, 1); /* Smooth acceleration/deceleration */
+        }
+
+        /* Class added by JS to trigger the underline */
+        .start-underline #intro-underline {
+            width: 100%;
+        }
+
+        /* Class added by JS to fade out the entire overlay */
+        .fade-out {
+            opacity: 0 !important;
+            pointer-events: none; /* Allows clicking through to the main website */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div id="intro-content">
+            <h1 id="intro-text">HollowNet</h1>
+            <div id="intro-underline"></div>
+        </div>
+    </div>
+
+    <div style="padding: 2rem; color: white;">
+        <h1>Welcome to HollowNet</h1>
+        <p>The intro has finished or was skipped.</p>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('intro-overlay');
+        const content = document.getElementById('intro-content');
+        const textElement = document.getElementById('intro-text');
+        const originalText = textElement.textContent;
+        
+        // 1. Clear the text and wrap each letter in a span for individual animation
+        textElement.textContent = '';
+        originalText.split('').forEach((char, index) => {
+            const span = document.createElement('span');
+            span.textContent = char;
+            span.className = 'letter';
+            // Stagger the animation delay for the left-to-right effect
+            span.style.transitionDelay = `${index * 0.1}s`;
+            textElement.appendChild(span);
+        });
+
+        let activeTimeouts = [];
+
+        // 2. Start the sequence
+        // Small initial delay to ensure smooth rendering before animation starts
+        activeTimeouts.push(setTimeout(() => {
+            content.classList.add('start-text');
+        }, 300));
+
+        // 3. Trigger the underline after the text animation finishes
+        // Formula: (Number of letters * delay per letter) + CSS transition duration + buffer
+        const textAnimDuration = (originalText.length * 100) + 600 + 200; 
+        activeTimeouts.push(setTimeout(() => {
+            content.classList.add('start-underline');
+        }, textAnimDuration));
+
+        // 4. Fade out the entire overlay after the underline finishes
+        // Wait for underline duration (800ms) + a 1.2s pause so the user can read it
+        const fadeOutTime = textAnimDuration + 800 + 1200; 
+        activeTimeouts.push(setTimeout(() => {
+            overlay.classList.add('fade-out');
+        }, fadeOutTime));
+
+        // 5. Skip functionality
+        overlay.addEventListener('click', () => {
+            // Clear all pending scheduled animations
+            activeTimeouts.forEach(clearTimeout);
+            
+            // Speed up the fade-out transition for a snappier skip
+            overlay.style.transition = 'opacity 0.3s ease';
+            overlay.classList.add('fade-out');
+        });
+    </script>
+
+</body>
+</html>
